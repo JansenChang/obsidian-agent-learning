@@ -1,0 +1,21 @@
+# Obsidian internal files
+.obsidian/
+**/.obsidian/
+
+# macOS
+.DS_Store
+Thumbs.db
+
+# Audio files (too large for Git)
+*.mp3
+*.wav
+*.m4a
+*.aac
+*.flac
+*.ogg
+*.wma
+
+# System files
+/.claude/
+/.cursor/
+/.vscode/
