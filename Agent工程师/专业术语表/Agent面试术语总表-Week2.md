@@ -53,7 +53,22 @@ tags:
 | Cross-encoder | 交叉编码器 | 问题和文档拼接后一起编码，准但慢 | Day10 |
 | MRR | Mean Reciprocal Rank（平均倒数排名） | 看最相关文档排第几，1/排名 | Day10 |
 | NDCG | Normalized Discounted Cumulative Gain（归一化折损累计增益） | 多级相关性下的排序质量评估 | Day10 |
-| Query Rewrite | 查询改写 | 模糊问题变清晰查询再检索 | Day10 |
+| **Query Rewrite** | 查询改写 | 模糊问题变清晰查询再检索 | Day10 |
+
+### Day 14 — ReAct Agent 循环手撕
+
+| 术语 | 英文全称 | 一句话 | 卡片 |
+|------|---------|--------|------|
+| **ReAct** | Reasoning + Acting（推理+行动） | Agent 核心循环：Thought→Action→Observation 三步走 | Day14 |
+| **Thought** | 思考 | LLM 推理当前状态，决定下一步做什么或调用什么工具 | Day14 |
+| **Action** | 行动 | LLM 输出结构化工具调用指令（工具名+参数） | Day14 |
+| **Observation** | 观察 | 工具执行结果写回对话，让 LLM 获取反馈信息 | Day14 |
+| **Tool Registry** | 工具注册中心 | 管理所有可用工具的 Schema 定义和实现 | Day14 |
+| **tool_calls** | 工具调用字段 | OpenAI API 中模型返回的结构化函数调用数据 | Day14 |
+| **Function Calling** | 函数调用 | LLM 输出标准化 JSON 格式调用指令的协议 | Day14 |
+| **Tool Schema** | 工具描述模式 | 工具名称、描述、参数定义的 JSON Schema 格式 | Day14 |
+| **Neutral Observation** | 中立观察包装 | 工具返回结果用安全模板包装，防御间接注入 | Day14 |
+| **关键上下文提升** | Key Context Promotion | 把核心信息保持在对话前端，防御 Lost in the Middle | Day14 |
 | Query Decomposition | 查询分解 | 复合问题拆成多个子问题分别检索再合并 | Day10 |
 
 ### Day 11 — Agentic RAG 与 GraphRAG
