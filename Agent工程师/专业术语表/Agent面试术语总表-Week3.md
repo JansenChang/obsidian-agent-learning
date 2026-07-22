@@ -56,3 +56,14 @@ tags:
 | **Tool Schema** | 工具描述模式 | 工具名称、描述、参数定义的 JSON Schema 格式 | — |
 | **Neutral Observation** | 中立观察包装 | 工具返回结果用安全模板包装，防御间接注入 | [[Prompt Injection（提示注入）]] |
 | **关键上下文提升** | Key Context Promotion | 把核心信息保持在对话前端，防御 Lost in the Middle | — |
+
+### Day 17 — Agent Memory 系统设计
+
+| 术语 | 英文全称 | 一句话 | 卡片 |
+|------|---------|--------|------|
+| **Working Memory（工作记忆）** | Working Memory | ReAct 循环中的中间变量（Thought、工具返回结果），秒-分钟级，任务结束释放 | [[三层记忆架构]] |
+| **Short-term Memory（短期记忆）** | Short-term Memory | 当前会话的完整对话历史，分钟-小时级，受限于上下文窗口，载体即 Day14 ReAct 的 messages 列表 | [[三层记忆架构]] |
+| **Long-term Memory（长期记忆）** | Long-term Memory | 跨会话持久化用户信息（偏好、背景、决策），天-年级，Embedding + 向量库存储，按需检索注入 | [[长期记忆（用户专属RAG）]] |
+| **ConversationBufferWindowMemory（滑动窗口记忆）** | ConversationBufferWindowMemory | 只保留最近 K 轮对话，token 消耗恒定但早期关键信息可能丢失 | [[ConversationBufferMemory]] |
+| **ConversationTokenBufferMemory（Token截断记忆）** | ConversationTokenBufferMemory | 按 token 数截断消息——比按轮数更精确的窗口控制，适用于对话长度波动大的场景 | [[ConversationBufferMemory]] |
+| **Memory Synthesis（记忆合成）** | Memory Synthesis | 从多条相关记忆自动提炼高层元记忆（如 5 次提到"简洁设计"→ 总结"该用户偏好简洁风格"） | [[Mem0]] |
