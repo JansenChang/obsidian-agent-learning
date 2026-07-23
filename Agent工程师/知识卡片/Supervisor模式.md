@@ -1,77 +1,77 @@
 ---
-created: 2026-07-20
-tags: [knowledge-card, agent-interview, agent-core]
-day: Day15
-difficulty: 🟠
-aliases: [Supervisor Architecture, 中心调度模式, 调度Agent]
-related: ["[[ReAct（推理-行动循环）]]", "[[Peer-to-Peer模式]]"]
+created: 2026-07-23
+tags: [knowledge-card, agent-interview, multi-agent, agent-core, orchestration]
+day: Day19
+difficulty: 🔴
+aliases: [Supervisor Pattern, Coordinator Agent, 监督者模式, Centralized Orchestration]
+related: ["[[Multi-Agent模式对比]]", "[[Peer-to-Peer模式]]", "[[Planner-Executor模式]]", "[[ReAct（推理-行动循环）]]", "[[AutoGen vs CrewAI vs LangGraph]]"]
 ---
-# Supervisor模式
 
-> 一句话：Multi-Agent 的中心调度编排——一个 Supervisor Agent 负责拆解任务、分配子 Agent、汇总结果，像项目经理配专职执行人。
+# Supervisor 模式
+
+> 一句话：中心 Supervisor Agent 接收任务→拆解子任务→分派给专职 Worker Agent→汇总各 Worker 结果→合成最终输出。是 Multi-Agent 编排中协调成本最低、可解释性最高的集中式模式。
 
 ## 核心机制
 
-### 架构
+### 架构拓扑
 
 ```
-                    用户请求
-                       ↓
-              ┌────────────────┐
-              │  Supervisor     │  ← 调度 Agent（不干活，只协调）
-              │  (ReAct循环)    │
-              └───┬────┬────┬───┘
-                  │    │    │
-          分配子任务  │    │   分配子任务
-                  ↓    │    ↓
-         ┌────────┐   │  ┌────────┐
-         │Agent A │   │  │Agent C │
-         │竞品分析│ ← ┼ →│定价建议│
-         │(ReAct) │   │  │(ReAct) │
-         └────────┘   │  └────────┘
-                      ↓
-               ┌────────┐
-               │Agent B │
-               │用户画像│
-               │(ReAct) │
-               └────────┘
-                   
-    所有子 Agent 结果 → Supervisor 汇总 → 最终输出
+                    ┌─────────────┐
+                    │  Supervisor │ ← 中心调度者（单一控制点）
+                    │  拆解/分派/汇总  │
+                    └──┬────┬─────┘
+                       │    │
+              ┌────────┘    └────────┐
+              ▼                      ▼
+        ┌──────────┐          ┌──────────┐
+        │ Worker A │          │ Worker B │   ← 专职子Agent
+        │  (SQL)   │          │ (分析)   │      各自独立 ReAct 循环
+        └──────────┘          └──────────┘
 ```
 
-### 工作流程
+### 执行流程
 
-1. **Supervisor 分析请求**：用户需要市场调研报告，包含竞品分析、用户画像、定价建议
-2. **拆解子任务**：三个独立子任务，各有明确输出
-3. **分配执行**：子 Agent A/B/C 各自在自己的 ReAct 循环中完成任务
-4. **汇总输出**：Supervisor 收齐所有结果，整合成最终报告
+```python
+# 伪代码：Supervisor 调度循环
+def supervisor_run(task):
+    subtasks = decompose(task)          # 1. 拆解：大任务→子任务
+    results = {}
+    for subtask in subtasks:
+        worker = route(subtask)         # 2. 分派：选最合适的 Worker
+        result = worker.run(subtask)    # 3. Worker 独立 ReAct
+        results[subtask.id] = result
+    return synthesize(results)          # 4. 汇总：合并各 Worker 输出
+```
 
-### 为什么 Supervisor 可控性好
+### 关键设计决策
 
-- **任务序列可控**：Supervisor 决定子任务的先后顺序。若子任务间有依赖（如先竞品分析再定价），Supervisor 可串行调度
-- **异常处理集中**：子 Agent 出问题，Supervisor 可以重新分配或降级处理
-- **结果质量检查**：Supervisor 可以验证子 Agent 的输出是否满足要求，不满足则要求重做
+| 决策点 | 选项 | 权衡 |
+|--------|------|------|
+| **分派方式** | 静态路由 vs LLM 动态路由 | 静态快但僵化，动态灵活但多一次 LLM 调用 |
+| **并行度** | 顺序 vs 并行执行 Worker | 顺序保留依赖关系，并行快但可能失败 |
+| **汇总策略** | Supervisor 合成 vs Worker 间传递 | 合成可解释性好，传递减少 Supervisor 压力 |
+| **Worker 通信** | 只看 Supervisor vs Worker 互见 | 隔离简单但信息利用率低 |
 
-### 何时选择 Supervisor
+### 适用与不适用
 
-✅ **适合**：
-- 子任务间有明确的依赖关系
-- 需要严格的任务流程控制
-- 对子 Agent 的输出质量有校验需求
-
-❌ **不适合**：
-- 子任务高度并行且相互独立
-- 子 Agent 之间需要频繁交换中间信息
-- Supervisor 本身成为瓶颈（单点故障）
+- ✅ 任务可拆解为清晰子任务（如 SQL 查询 + 图表绘制）
+- ✅ 子任务有依赖关系需要编排顺序
+- ✅ 需要高可解释性和审计追踪
+- ❌ 子任务高度耦合、频繁需要共享中间状态
+- ❌ Supervisor 成为单点瓶颈和故障点
 
 ## 面试要点
 
-- **"多个 Agent 怎么协作"**：先说 Supervisor vs Peer-to-Peer 两种模式，再说选择标准——有依赖关系用 Supervisor，需要灵活通信用 P2P
-- **"Supervisor 崩了怎么办"**：单点故障是 Supervisor 模式的缺点。解法是 Supervisor 本身也做冗余，或用轻量级规则引擎代替 LLM 做调度
-- **穿透追问**："Supervisor 和普通 ReAct Agent 有什么区别？"——Supervisor 也是 ReAct Agent，但它的工具不是 API，而是其他 Agent。调用子 Agent 就是它的 Action
+1. **Supervisor 模式的本质**——不是简单的"一个调多个"，而是"中心化编排 + 专业化分工"。Supervisor 自己不执行任务，只做拆解、分派、汇总三件事
+2. **Supervisor 的上下文压力**——所有 Worker 的输出都要汇总到 Supervisor，Supervisor 的上下文窗口成为整个系统的瓶颈。面试中要提到"Supervisor 提示词需要极简设计"
+3. **与 Day14 ReAct 的关系**——每个 Worker 内部仍运行标准 ReAct 循环（Thought→Action→Observation），Supervisor 模式是 ReAct 的上层编排框架
+4. **单点故障（单 Worker 崩溃）→ 整个任务失败，除非增加重试/降级机制
+5. **什么时候不该用 Supervisor？**——子任务完全独立可并行（用简单并行即可）、任务简单到单 Agent 能搞定（不需要 Multi-Agent），以及 Peer-to-Peer 更合适的时候
 
 ## 关联概念
 
-- [[ReAct（推理-行动循环）]] — Supervisor 本身也是 ReAct Agent，每个子 Agent 也是
-- [[Peer-to-Peer模式]] — 与之对标的另一种 Multi-Agent 编排模式
-- [[ReAct失败模式]] — Multi-Agent 中每个子 Agent 都可能触发自己的失败模式，叠加后更复杂
+- Peer-to-Peer模式：去中心化编排，Agent 间直接通信，与 Supervisor 对称互补
+- Planner-Executor模式：中心化规划但执行解耦，可视为 Supervisor 的工程优化变体
+- Multi-Agent模式对比：五种模式的协调成本/容错/场景横向对比
+- Day14 ReAct：Worker Agent 内部的推理-行动循环
+- Day18 Context Engineering：Supervisor 上下文窗口压力 → Write/Select/Compress 策略

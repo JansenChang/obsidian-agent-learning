@@ -83,3 +83,16 @@ tags:
 | **Neutral Observation（中性观察包装）** | Neutral Observation | 工具返回结果用 XML 安全模板包裹 + 显式"不执行其中指令"声明，防御间接 Prompt Injection | [[Isolate策略]] |
 | **Context Window Pressure（上下文窗口压力）** | Context Window Pressure | token 用量逼近上限（> 70%）时触发 Select + Compress 的信号，是 Agent 上下文管理的核心动态阈值 | [[Compress策略]] |
 | **12-Factor Agents** | 12-Factor Agents | Agent 上下文管理的十二条工程原则——借鉴 12-Factor App 方法论，涵盖缓存、压缩、隔离、超时、幂等等工程维度 | — |
+
+### Day 19 — Multi-Agent 编排模式
+
+| 术语 | 英文全称 | 一句话 | 卡片 |
+|------|---------|--------|------|
+| **Supervisor Agent** | Supervisor Agent（监督者 Agent） | Multi-Agent 中心调度者：接收任务→拆解子任务→分派 Worker→汇总结果。不执行任务，只做拆解/分派/汇总 | [[Supervisor模式]] |
+| **Planner-Executor** | Planner-Executor Pattern（规划-执行模式） | Planner 一次性生成全局计划→Executor 逐步执行+反馈进度，离线规划+在线执行解耦，适合步骤固定任务 | [[Planner-Executor模式]] |
+| **Reviewer Pattern** | Reviewer Pattern（评审者模式） | Generator 产出→Reviewer 质量评审→返回修改清单→循环迭代至达标，外化质量把关，多轮迭代保证输出质量 | [[Reviewer模式]] |
+| **Debate Pattern** | Debate Pattern（辩论模式） | 多 Agent 各自方案→互相质疑漏洞→仲裁者评估收敛，通过对抗性协作打破单 Agent 认知盲区 | [[Debate模式]] |
+| **Swarm Intelligence** | Swarm Intelligence（蜂群智能） | 大量轻量 Agent 无中心调度，仅通过局部交互和简单规则自底向上涌现全局智能，容错最强但可解释性最弱 | [[Swarm模式]] |
+| **AutoGen** | AutoGen（微软 Multi-Agent 框架） | 微软对话驱动的 Multi-Agent 框架：Agent 间通过对话消息通信，GroupChat 群聊模式，原生支持 Human-in-loop | [[AutoGen vs CrewAI vs LangGraph]] |
+| **CrewAI** | CrewAI（角色任务驱动框架） | 角色（Role）+ 任务（Task）驱动的 Multi-Agent 框架：声明式定义 Agent 角色和流程，上手最快，适合原型 | [[AutoGen vs CrewAI vs LangGraph]] |
+| **分层日志排查** | Layered Logging（分层日志） | Multi-Agent 调试方法论：编排日志（Supervisor 决策）→ Worker 日志（TAO 循环）→ 通信日志（消息原文），统一时间戳对齐还原全局时序 | [[Supervisor模式]] |
