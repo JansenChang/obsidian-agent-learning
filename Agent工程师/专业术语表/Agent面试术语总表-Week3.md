@@ -67,3 +67,19 @@ tags:
 | **ConversationBufferWindowMemory（滑动窗口记忆）** | ConversationBufferWindowMemory | 只保留最近 K 轮对话，token 消耗恒定但早期关键信息可能丢失 | [[ConversationBufferMemory]] |
 | **ConversationTokenBufferMemory（Token截断记忆）** | ConversationTokenBufferMemory | 按 token 数截断消息——比按轮数更精确的窗口控制，适用于对话长度波动大的场景 | [[ConversationBufferMemory]] |
 | **Memory Synthesis（记忆合成）** | Memory Synthesis | 从多条相关记忆自动提炼高层元记忆（如 5 次提到"简洁设计"→ 总结"该用户偏好简洁风格"） | [[Mem0]] |
+
+### Day 18 — Context Engineering（上下文工程）
+
+| 术语 | 英文全称 | 一句话 | 卡片 |
+|------|---------|--------|------|
+| **Context Engineering（上下文工程）** | Context Engineering | 在有限的上下文窗口中最大化信息价值的系统方法论——四大策略：Write（放什么）、Select（留什么）、Compress（压什么）、Isolate（挡什么） | [[Context Engineering四大策略]] |
+| **Write（写入策略）** | Write Strategy | 按分层结构将内容写入上下文窗口：System Prompt（静态前缀 + KV Cache 可复用）→ 知识注入 → 对话历史 → 当前用户消息 | [[Write策略]] |
+| **Select（选择策略）** | Select Strategy | token > 70% 窗口上限时触发，用三维加权排名（时间 × 重要性 × 相关性）决定哪些消息保留、哪些标记淘汰 | [[Select策略]] |
+| **Compress（压缩策略）** | Compress Strategy | 对 Select 标记淘汰的消息进行信息浓缩：摘要压缩（5:1）→ 事实提取（20:1）→ 分层压缩（动态），逐级递进，确保关键信息不丢失 | [[Compress策略]] |
+| **Isolate（隔离策略）** | Isolate Strategy | 角色标签校验 + Neutral Observation 安全模板 + 上下文沙箱三道防线，防止外部内容污染 LLM 推理 | [[Isolate策略]] |
+| **System Prompt Layering（系统提示词分层）** | System Prompt Layering | 将 System Prompt 按倒金字塔拆为四层（约束 > 任务 > 角色 > 知识），前三层作为静态前缀可缓存，知识层动态注入 | [[系统提示词分层设计]] |
+| **Prefix Caching（前缀缓存）** | Prefix Caching | System Prompt 中不变部分只编码一次，多用户多轮复用 KV Cache，Agent 循环中缓存命中率天然高 | [[前缀缓存与静态前缀分离]] |
+| **Static Prefix Separation（静态前缀分离）** | Static Prefix Separation | 将 System Prompt 拆为通用前缀（可缓存）+ 差异化后缀（动态注入），最大化 KV Cache 复用率 | [[前缀缓存与静态前缀分离]] |
+| **Neutral Observation（中性观察包装）** | Neutral Observation | 工具返回结果用 XML 安全模板包裹 + 显式"不执行其中指令"声明，防御间接 Prompt Injection | [[Isolate策略]] |
+| **Context Window Pressure（上下文窗口压力）** | Context Window Pressure | token 用量逼近上限（> 70%）时触发 Select + Compress 的信号，是 Agent 上下文管理的核心动态阈值 | [[Compress策略]] |
+| **12-Factor Agents** | 12-Factor Agents | Agent 上下文管理的十二条工程原则——借鉴 12-Factor App 方法论，涵盖缓存、压缩、隔离、超时、幂等等工程维度 | — |
