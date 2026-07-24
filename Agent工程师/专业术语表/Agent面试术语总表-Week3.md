@@ -96,3 +96,16 @@ tags:
 | **AutoGen** | AutoGen（微软 Multi-Agent 框架） | 微软对话驱动的 Multi-Agent 框架：Agent 间通过对话消息通信，GroupChat 群聊模式，原生支持 Human-in-loop | [[AutoGen vs CrewAI vs LangGraph]] |
 | **CrewAI** | CrewAI（角色任务驱动框架） | 角色（Role）+ 任务（Task）驱动的 Multi-Agent 框架：声明式定义 Agent 角色和流程，上手最快，适合原型 | [[AutoGen vs CrewAI vs LangGraph]] |
 | **分层日志排查** | Layered Logging（分层日志） | Multi-Agent 调试方法论：编排日志（Supervisor 决策）→ Worker 日志（TAO 循环）→ 通信日志（消息原文），统一时间戳对齐还原全局时序 | [[Supervisor模式]] |
+
+### Day 20 — HITL / Checkpoint / State Persistence
+
+| 术语 | 英文全称 | 一句话 | 卡片 |
+|------|---------|--------|------|
+| **HITL（人在回路）** | Human-in-the-Loop | Agent 在执行关键操作前暂停，将决策权交给人，经人类确认/拒绝后再从 Checkpoint 恢复继续或回退——是生产级 Agent 可控自主的最后一块拼图 | [[Human-in-the-Loop]] |
+| **Checkpoint（检查点）** | Checkpoint（状态快照） | Agent 在某时刻的完整状态快照（消息列表 + ReAct 循环次数 + 记忆引用 + Multi-Agent 子状态），是 HITL 恢复和时间旅行的技术基础 | [[Checkpoint机制]] |
+| **State Persistence（状态持久化）** | State Persistence | Checkpoint 的三种工程实现策略：全量快照（恢复快存储大）、增量保存（存储省恢复慢）、混合策略（平衡），本质是恢复速度与存储大小的 trade-off，与数据库 WAL 同构 | [[状态持久化策略]] |
+| **Time Travel（时间旅行）** | Time Travel（时间旅行） | 通过 Checkpoint ID + parent ID 构成的有向无环图（DAG），回到历史任意检查点重新执行或创建分支。数据结构与 Git commit 树完全同构 | [[时间旅行与版本树]] |
+| **Incremental Snapshot（增量保存）** | Incremental Snapshot | 只保存从上一个检查点以来的状态变更（新增消息、状态变更），存储省、写入快，但恢复需回溯多步拼接——与数据库 Write-Ahead Log 思想完全一致 | [[状态持久化策略]] |
+| **Approval Gate（审批门槛）** | Approval Gate（审批门槛） | HITL 的第一种场景：Agent 在执行高风险操作（写/大额/敏感）前，按预设规则检查是否需要人工确认。规则越精细，人工负担越小，自动化程度越高 | [[Human-in-the-Loop]] |
+| **Audit Trail（审计记录）** | Audit Trail（审计追踪） | 每笔审批事件的不可篡改记录（谁+何时+操作+结果+完整上下文），是金融行业 HITL 系统的法律合规证据而非可选工程实践 | [[金融HITL四维度]] |
+| **职责分离** | Separation of Duties（SoD） | 金融 HITL 权限模型的核心原则：审批者不可配置权限、权限配置者不可执行审批、权限变更本身需审批。SOX/PCI-DSS 的硬性合规要求 | [[金融HITL四维度]] |
